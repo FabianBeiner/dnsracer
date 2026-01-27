@@ -15,7 +15,7 @@ A fast, clean DNS resolver benchmark tool that tests and ranks public DNS server
 
 ```bash
 # Download and run
-curl -O https://raw.githubusercontent.com/FabianBeiner/dnsracer/edit/main/dnsracer.sh
+curl -O https://raw.githubusercontent.com/FabianBeiner/dnsracer/refs/heads/main/dnsracer.sh
 chmod +x dnsracer.sh
 ./dnsracer.sh
 ```
