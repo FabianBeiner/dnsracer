@@ -79,6 +79,10 @@ declare -a DNS_NAMES_V6=(
   "Google-v6"
   "Quad9-v6"
   "OpenDNS-v6"
+  "DNS.SB-v6"
+  "AdGuard-v6"
+  "CleanBrowsing-v6"
+  "Comodo-v6"
 )
 
 # Build the full DNS_NAMES array based on IPv6 availability
@@ -97,8 +101,12 @@ declare -A DNS_PRIMARY=(
   ["OpenDNS"]="208.67.222.222"
   ["OpenDNS-v6"]="2620:119:35::35"
   ["DNS.SB"]="185.222.222.222"
+  ["DNS.SB-v6"]="2a09::"
   ["AdGuard"]="94.140.14.14"
+  ["AdGuard-v6"]="2a10:50c0::ad1:ff"
   ["CleanBrowsing"]="185.228.168.9"
+  ["CleanBrowsing-v6"]="2a0d:2a00:1::2"
+  ["Comodo"]="8.26.56.26"
   ["Comodo"]="8.26.56.26"
 )
 
@@ -112,8 +120,11 @@ declare -A DNS_SECONDARY=(
   ["OpenDNS"]="208.67.220.220"
   ["OpenDNS-v6"]="2620:119:53::53"
   ["DNS.SB"]="45.11.45.11"
+  ["DNS.SB-v6"]="2a11::"
   ["AdGuard"]="94.140.15.15"
+  ["AdGuard-v6"]="94.140.15.15"
   ["CleanBrowsing"]="185.228.169.9"
+  ["CleanBrowsing-v6"]="2a0d:2a00:2::2"
   ["Comodo"]="8.20.247.20"
 )
 
