@@ -85,7 +85,7 @@ declare -A DNS_SECONDARY=(
   ["OpenDNS"]="208.67.220.220"
   ["DNS.SB"]="45.11.45.11"
   ["AdGuard"]="94.140.15.15"
-  ["CleanBrowsing"]="185.228.168.10"
+  ["CleanBrowsing"]="185.228.169.9"
   ["Comodo"]="8.20.247.20"
 )
 
