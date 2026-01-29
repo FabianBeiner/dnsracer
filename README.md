@@ -82,7 +82,7 @@ Recommended Configuration (Best Mix):
 | OpenDNS | 208.67.222.222 | 208.67.220.220 | Optional filtering |
 | DNS.SB | 185.222.222.222 | 45.11.45.11 | No-logging |
 | AdGuard | 94.140.14.14 | 94.140.15.15 | Ad-blocking |
-| CleanBrowsing | 185.228.168.9 | 185.228.168.10 | Security filtering |
+| CleanBrowsing | 185.228.168.9 | 185.228.169.9 | Security filtering |
 | Comodo | 8.26.56.26 | 8.20.247.20 | Security-focused |
 
 ### IPv6 Resolvers (tested automatically when IPv6 is available)
