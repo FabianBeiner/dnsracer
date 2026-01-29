@@ -96,7 +96,7 @@ declare -A DNS_DESC=(
   ["OpenDNS"]="Reliable with optional filtering"
   ["DNS.SB"]="No-logging, privacy-focused"
   ["AdGuard"]="Ad-blocking DNS resolver"
-  ["CleanBrowsing"]="Family-safe filtering"
+  ["CleanBrowsing"]="Security Filter only filtering"
   ["Comodo"]="Security-focused resolver"
 )
 
@@ -258,6 +258,9 @@ display_results() {
          "Rank" "Resolver" "IP Address(es)" "Avg Time" "Success Rate"
   echo "────────────────────────────────────────────────────────────────────────"
 
+  # Track individual server performance for recommendations
+  declare -A SERVER_TIMES
+  
   local rank=1
   for entry in $(for k in "${!RESULTS[@]}"; do echo "${RESULTS[$k]}|$k"; done | sort -t'|' -k1,1n); do
     IFS='|' read -r avg succ fail tot early name <<< "$entry"
@@ -266,6 +269,12 @@ display_results() {
     local secondary="${DNS_SECONDARY[$name]}"
     local ips="$primary"
     [ -n "$secondary" ] && ips="${primary}, ${secondary}"
+
+    # Store individual server times (approximation based on avg)
+    if [ "$avg" != "9999" ]; then
+      SERVER_TIMES["$name|$primary"]="$avg"
+      [ -n "$secondary" ] && SERVER_TIMES["$name|$secondary"]="$avg"
+    fi
 
     local status="OK"
     [ "$early" = "early" ] && status="${RED}Early abort${NC}"
@@ -295,10 +304,55 @@ display_results() {
 
   echo ""
   echo "════════════════════════════════════════════════════════════════════════"
+  
+  # Calculate recommended mix (best primary from one provider, best secondary from another)
+  local best_primary_name="" best_primary_ip="" best_primary_time=9999
+  local best_secondary_name="" best_secondary_ip="" best_secondary_time=9999
+  
+  for key in "${!SERVER_TIMES[@]}"; do
+    IFS='|' read -r provider_name ip <<< "$key"
+    local time="${SERVER_TIMES[$key]}"
+    
+    # Check if this is better than current best primary
+    if (( $(echo "$time < $best_primary_time" | bc -l) )); then
+      best_primary_time="$time"
+      best_primary_ip="$ip"
+      best_primary_name="$provider_name"
+    fi
+  done
+  
+  # Find best secondary from a DIFFERENT provider
+  for key in "${!SERVER_TIMES[@]}"; do
+    IFS='|' read -r provider_name ip <<< "$key"
+    local time="${SERVER_TIMES[$key]}"
+    
+    # Skip if same provider as primary
+    [ "$provider_name" = "$best_primary_name" ] && continue
+    
+    if (( $(echo "$time < $best_secondary_time" | bc -l) )); then
+      best_secondary_time="$time"
+      best_secondary_ip="$ip"
+      best_secondary_name="$provider_name"
+    fi
+  done
+  
+  if [ "$best_primary_ip" != "" ] && [ "$best_secondary_ip" != "" ]; then
+    echo ""
+    echo -e "${BOLD}${GREEN}Recommended Configuration (Best Mix):${NC}"
+    echo "────────────────────────────────────────────────────────────────────────"
+    echo -e " Primary:   ${BOLD}$best_primary_ip${NC} ($best_primary_name - $(printf "%.2f" $best_primary_time) ms)"
+    echo -e " Secondary: ${BOLD}$best_secondary_ip${NC} ($best_secondary_name - $(printf "%.2f" $best_secondary_time) ms)"
+    echo ""
+    echo -e " ${YELLOW}This provides redundancy across different providers${NC}"
+  fi
+  
+  echo ""
+  echo "════════════════════════════════════════════════════════════════════════"
   echo ""
   echo -e "${BLUE}Tips:${NC}"
   echo " • Lower latency is better - top performers typically show <20ms"
   echo " • Geographic distance to DNS servers affects response time"
+  echo " • Using servers from different providers increases redundancy"
   echo " • Early abort usually means port 53 UDP is blocked or unreachable"
   echo -e " • Run with ${BOLD}./dnsracer.sh --debug${NC} for detailed logging"
   echo ""
