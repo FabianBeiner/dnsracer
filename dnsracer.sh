@@ -3,6 +3,7 @@
 # =========================================================
 # dnsracer - Benchmark DNS resolver performance
 #            Clean output • Reliable • Cross-platform
+#            IPv4 + IPv6 support with auto-detection
 # =========================================================
 #
 # MIT License
@@ -27,7 +28,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-VERSION="1.0"
+VERSION="1.1"
 
 # ──────────────────────────────────────────────────────────────
 # Debug control – use --debug flag to enable
@@ -55,8 +56,14 @@ BLUE='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m'
 
+# Check IPv6 availability
+HAS_IPV6=0
+if ip -6 addr show scope global 2>/dev/null | grep -q 'inet6'; then
+  HAS_IPV6=1
+fi
+
 # DNS resolvers - Global selection of major public DNS services
-declare -a DNS_NAMES=(
+declare -a DNS_NAMES_V4=(
   "Cloudflare"
   "Google"
   "Quad9"
@@ -67,11 +74,28 @@ declare -a DNS_NAMES=(
   "Comodo"
 )
 
+declare -a DNS_NAMES_V6=(
+  "Cloudflare-v6"
+  "Google-v6"
+  "Quad9-v6"
+  "OpenDNS-v6"
+)
+
+# Build the full DNS_NAMES array based on IPv6 availability
+declare -a DNS_NAMES=("${DNS_NAMES_V4[@]}")
+if [ "$HAS_IPV6" = "1" ]; then
+  DNS_NAMES+=("${DNS_NAMES_V6[@]}")
+fi
+
 declare -A DNS_PRIMARY=(
   ["Cloudflare"]="1.1.1.1"
+  ["Cloudflare-v6"]="2606:4700:4700::1111"
   ["Google"]="8.8.8.8"
+  ["Google-v6"]="2001:4860:4860::8888"
   ["Quad9"]="9.9.9.9"
+  ["Quad9-v6"]="2620:fe::fe"
   ["OpenDNS"]="208.67.222.222"
+  ["OpenDNS-v6"]="2620:119:35::35"
   ["DNS.SB"]="185.222.222.222"
   ["AdGuard"]="94.140.14.14"
   ["CleanBrowsing"]="185.228.168.9"
@@ -80,23 +104,31 @@ declare -A DNS_PRIMARY=(
 
 declare -A DNS_SECONDARY=(
   ["Cloudflare"]="1.0.0.1"
+  ["Cloudflare-v6"]="2606:4700:4700::1001"
   ["Google"]="8.8.4.4"
+  ["Google-v6"]="2001:4860:4860::8844"
   ["Quad9"]="149.112.112.112"
+  ["Quad9-v6"]="2620:fe::9"
   ["OpenDNS"]="208.67.220.220"
+  ["OpenDNS-v6"]="2620:119:53::53"
   ["DNS.SB"]="45.11.45.11"
   ["AdGuard"]="94.140.15.15"
-  ["CleanBrowsing"]="185.228.169.9"
+  ["CleanBrowsing"]="185.228.168.10"
   ["Comodo"]="8.20.247.20"
 )
 
 declare -A DNS_DESC=(
   ["Cloudflare"]="Fast global anycast, privacy-focused"
+  ["Cloudflare-v6"]="Fast global anycast, privacy-focused (IPv6)"
   ["Google"]="Reliable, high uptime, global coverage"
+  ["Google-v6"]="Reliable, high uptime, global coverage (IPv6)"
   ["Quad9"]="Security and privacy-focused"
+  ["Quad9-v6"]="Security and privacy-focused (IPv6)"
   ["OpenDNS"]="Reliable with optional filtering"
+  ["OpenDNS-v6"]="Reliable with optional filtering (IPv6)"
   ["DNS.SB"]="No-logging, privacy-focused"
   ["AdGuard"]="Ad-blocking DNS resolver"
-  ["CleanBrowsing"]="Security Filter only filtering"
+  ["CleanBrowsing"]="Family-safe filtering"
   ["Comodo"]="Security-focused resolver"
 )
 
@@ -135,6 +167,11 @@ EOF
   echo ""
   echo "════════════════════════════════════════════════════════════════════════"
   echo " Testing ${#DNS_NAMES[@]} resolvers • ${#TEST_DOMAINS[@]} domains × $TESTS_PER_DOMAIN queries each"
+  if [ "$HAS_IPV6" = "1" ]; then
+    echo -e " ${GREEN}IPv6 detected${NC} - testing both IPv4 and IPv6 resolvers"
+  else
+    echo -e " ${YELLOW}IPv6 not available${NC} - testing IPv4 resolvers only"
+  fi
   echo " Early abort after $MAX_CONSECUTIVE_FAILURES consecutive failures"
   if [ "$DNSBENCH_DEBUG" = "1" ]; then
     echo " ${GREEN}Debug mode enabled${NC} → logs to $DEBUG_LOG_FILE"
@@ -142,9 +179,15 @@ EOF
   echo "════════════════════════════════════════════════════════════════════════"
   echo ""
   
-  local priv=$(get_private_ip)
-  local pub=$(get_public_ip)
-  echo -e " ${YELLOW}Testing from:${NC} ${BOLD}${priv}${NC} (public: ${pub})"
+  local priv_v4=$(get_private_ip)
+  local pub_v4=$(get_public_ip)
+  echo -e " ${YELLOW}IPv4:${NC} ${BOLD}${priv_v4}${NC} (public: ${pub_v4})"
+  
+  if [ "$HAS_IPV6" = "1" ]; then
+    local priv_v6=$(get_private_ipv6)
+    local pub_v6=$(get_public_ipv6)
+    echo -e " ${YELLOW}IPv6:${NC} ${BOLD}${priv_v6}${NC} (public: ${pub_v6})"
+  fi
   echo ""
 }
 
@@ -153,7 +196,15 @@ get_private_ip() {
 }
 
 get_public_ip() {
-  curl -s --connect-timeout 6 https://api.ipify.org 2>/dev/null || echo "?"
+  curl -4 -s --connect-timeout 6 https://api.ipify.org 2>/dev/null || echo "?"
+}
+
+get_private_ipv6() {
+  ip -6 addr show scope global 2>/dev/null | grep -oP '(?<=inet6\s)[\da-f:]+' | head -n1 || echo "?"
+}
+
+get_public_ipv6() {
+  curl -6 -s --connect-timeout 6 https://api64.ipify.org 2>/dev/null || echo "?"
 }
 
 classify_dig_failure() {
@@ -182,6 +233,10 @@ test_dns_server() {
   local total_ms=0 success=0 total=$(( ${#TEST_DOMAINS[@]} * TESTS_PER_DOMAIN ))
   local consec_fail=0 early_abort=0
 
+  # Determine if this is IPv6 based on address format
+  local is_ipv6=0
+  [[ "$primary" =~ : ]] && is_ipv6=1
+
   echo -e "${BLUE}→${NC} ${BOLD}${name}${NC} ${YELLOW}(${primary}${secondary:+ | ${secondary}})${NC}"
 
   for domain in "${TEST_DOMAINS[@]}"; do
@@ -189,7 +244,13 @@ test_dns_server() {
       local server="$primary"
       [ -n "$secondary" ] && [ $success -eq 0 ] && server="$secondary"
 
-      local dig_cmd="dig @$server +tries=1 +time=5 $domain"
+      # Use appropriate dig flags for IPv6
+      local dig_flags="+tries=1 +time=5"
+      if [ $is_ipv6 -eq 1 ]; then
+        dig_flags="-6 $dig_flags"
+      fi
+
+      local dig_cmd="dig $dig_flags @$server $domain"
       debug "Executing: $dig_cmd"
 
       result=$(eval "$dig_cmd" 2>&1)
@@ -254,7 +315,7 @@ display_results() {
   echo "════════════════════════════════════════════════════════════════════════"
   echo ""
 
-  printf "${BOLD}%-6s %-20s %-32s %12s    %s${NC}\n" \
+  printf "${BOLD}%-6s %-20s %-38s %12s    %s${NC}\n" \
          "Rank" "Resolver" "IP Address(es)" "Avg Time" "Success Rate"
   echo "────────────────────────────────────────────────────────────────────────"
 
@@ -292,11 +353,11 @@ display_results() {
     fi
 
     if [ "$avg" = "9999" ]; then
-      printf "${RED}%-6s %-20s %-32s %12s    %3d%%  %b${NC}\n" \
-             "$rank." "$name" "${ips:0:32}" "—" "$rate" "$status"
+      printf "${RED}%-6s %-20s %-38s %12s    %3d%%  %b${NC}\n" \
+             "$rank." "$name" "${ips:0:38}" "—" "$rate" "$status"
     else
-      printf "${color}%-6s %-20s %-32s %9.2f ms    %3d%%${NC}\n" \
-             "$rank." "$name" "${ips:0:32}" "$avg" "$rate"
+      printf "${color}%-6s %-20s %-38s %9.2f ms    %3d%%${NC}\n" \
+             "$rank." "$name" "${ips:0:38}" "$avg" "$rate"
     fi
 
     ((rank++))
@@ -321,13 +382,17 @@ display_results() {
     fi
   done
   
-  # Find best secondary from a DIFFERENT provider
+  # Find best secondary from a DIFFERENT provider (strip -v6 suffix for comparison)
   for key in "${!SERVER_TIMES[@]}"; do
     IFS='|' read -r provider_name ip <<< "$key"
     local time="${SERVER_TIMES[$key]}"
     
-    # Skip if same provider as primary
-    [ "$provider_name" = "$best_primary_name" ] && continue
+    # Strip -v6 suffix for provider comparison
+    local provider_base="${provider_name%-v6}"
+    local best_provider_base="${best_primary_name%-v6}"
+    
+    # Skip if same base provider as primary
+    [ "$provider_base" = "$best_provider_base" ] && continue
     
     if (( $(echo "$time < $best_secondary_time" | bc -l) )); then
       best_secondary_time="$time"
@@ -340,10 +405,12 @@ display_results() {
     echo ""
     echo -e "${BOLD}${GREEN}Recommended Configuration (Best Mix):${NC}"
     echo "────────────────────────────────────────────────────────────────────────"
-    echo -e " Primary:   ${BOLD}$best_primary_ip${NC} ($best_primary_name - $(printf "%.2f" $best_primary_time) ms)"
-    echo -e " Secondary: ${BOLD}$best_secondary_ip${NC} ($best_secondary_name - $(printf "%.2f" $best_secondary_time) ms)"
+    echo -e " Primary:   ${BOLD}$best_primary_ip${NC}"
+    echo -e "            ($best_primary_name - $(printf "%.2f" $best_primary_time) ms)"
+    echo -e " Secondary: ${BOLD}$best_secondary_ip${NC}"
+    echo -e "            ($best_secondary_name - $(printf "%.2f" $best_secondary_time) ms)"
     echo ""
-    echo -e " ${YELLOW}This provides redundancy across different providers${NC}"
+    echo -e " ${YELLOW}This configuration provides redundancy across different providers${NC}"
   fi
   
   echo ""
@@ -353,6 +420,9 @@ display_results() {
   echo " • Lower latency is better - top performers typically show <20ms"
   echo " • Geographic distance to DNS servers affects response time"
   echo " • Using servers from different providers increases redundancy"
+  if [ "$HAS_IPV6" = "1" ]; then
+    echo " • IPv6 can sometimes be faster than IPv4 (or vice versa)"
+  fi
   echo " • Early abort usually means port 53 UDP is blocked or unreachable"
   echo -e " • Run with ${BOLD}./dnsracer.sh --debug${NC} for detailed logging"
   echo ""
@@ -372,6 +442,7 @@ main() {
   if [ "$DNSBENCH_DEBUG" = "1" ]; then
     > "$DEBUG_LOG_FILE" 2>/dev/null || true
     debug "Script started with --debug flag"
+    debug "IPv6 available: $HAS_IPV6"
   fi
 
   check_requirements
