@@ -82,7 +82,6 @@ declare -a DNS_NAMES_V6=(
   "DNS.SB-v6"
   "AdGuard-v6"
   "CleanBrowsing-v6"
-  "Comodo-v6"
 )
 
 # Build the full DNS_NAMES array based on IPv6 availability
@@ -107,7 +106,6 @@ declare -A DNS_PRIMARY=(
   ["CleanBrowsing"]="185.228.168.9"
   ["CleanBrowsing-v6"]="2a0d:2a00:1::2"
   ["Comodo"]="8.26.56.26"
-  ["Comodo"]="8.26.56.26"
 )
 
 declare -A DNS_SECONDARY=(
@@ -122,7 +120,7 @@ declare -A DNS_SECONDARY=(
   ["DNS.SB"]="45.11.45.11"
   ["DNS.SB-v6"]="2a11::"
   ["AdGuard"]="94.140.15.15"
-  ["AdGuard-v6"]="94.140.15.15"
+  ["AdGuard-v6"]="2a10:50c0::ad2:ff"
   ["CleanBrowsing"]="185.228.169.9"
   ["CleanBrowsing-v6"]="2a0d:2a00:2::2"
   ["Comodo"]="8.20.247.20"
@@ -138,9 +136,13 @@ declare -A DNS_DESC=(
   ["OpenDNS"]="Reliable with optional filtering"
   ["OpenDNS-v6"]="Reliable with optional filtering (IPv6)"
   ["DNS.SB"]="No-logging, privacy-focused"
+  ["DNS.SB-v6"]="No-logging, privacy-focused (IPv6)"
   ["AdGuard"]="Ad-blocking DNS resolver"
-  ["CleanBrowsing"]="Family-safe filtering"
+  ["AdGuard-v6"]="Ad-blocking DNS resolver (IPv6)"
+  ["CleanBrowsing"]="Security filtering"
+  ["CleanBrowsing-v6"]="Security filtering (IPv6)"
   ["Comodo"]="Security-focused resolver"
+  ["Comodo-v6"]="Security-focused resolver (IPv6)"
 )
 
 TEST_DOMAINS=(
@@ -185,7 +187,7 @@ EOF
   fi
   echo " Early abort after $MAX_CONSECUTIVE_FAILURES consecutive failures"
   if [ "$DNSBENCH_DEBUG" = "1" ]; then
-    echo " ${GREEN}Debug mode enabled${NC} → logs to $DEBUG_LOG_FILE"
+    echo -e " ${GREEN}Debug mode enabled${NC} → logs to $DEBUG_LOG_FILE"
   fi
   echo "════════════════════════════════════════════════════════════════════════"
   echo ""
@@ -377,51 +379,106 @@ display_results() {
   echo ""
   echo "════════════════════════════════════════════════════════════════════════"
   
-  # Calculate recommended mix (best primary from one provider, best secondary from another)
-  local best_primary_name="" best_primary_ip="" best_primary_time=9999
-  local best_secondary_name="" best_secondary_ip="" best_secondary_time=9999
+  # Calculate recommended mix - separate for IPv4 and IPv6
+  local best_v4_primary_name="" best_v4_primary_ip="" best_v4_primary_time=9999
+  local best_v4_secondary_name="" best_v4_secondary_ip="" best_v4_secondary_time=9999
+  local best_v6_primary_name="" best_v6_primary_ip="" best_v6_primary_time=9999
+  local best_v6_secondary_name="" best_v6_secondary_ip="" best_v6_secondary_time=9999
   
+  # Separate IPv4 and IPv6 servers
   for key in "${!SERVER_TIMES[@]}"; do
     IFS='|' read -r provider_name ip <<< "$key"
     local time="${SERVER_TIMES[$key]}"
     
-    # Check if this is better than current best primary
-    if (( $(echo "$time < $best_primary_time" | bc -l) )); then
-      best_primary_time="$time"
-      best_primary_ip="$ip"
-      best_primary_name="$provider_name"
+    # Check if IPv6 or IPv4
+    if [[ "$ip" =~ : ]]; then
+      # IPv6
+      if (( $(echo "$time < $best_v6_primary_time" | bc -l) )); then
+        best_v6_primary_time="$time"
+        best_v6_primary_ip="$ip"
+        best_v6_primary_name="$provider_name"
+      fi
+    else
+      # IPv4
+      if (( $(echo "$time < $best_v4_primary_time" | bc -l) )); then
+        best_v4_primary_time="$time"
+        best_v4_primary_ip="$ip"
+        best_v4_primary_name="$provider_name"
+      fi
     fi
   done
   
-  # Find best secondary from a DIFFERENT provider (strip -v6 suffix for comparison)
+  # Find best secondary for IPv4 from DIFFERENT provider
   for key in "${!SERVER_TIMES[@]}"; do
     IFS='|' read -r provider_name ip <<< "$key"
     local time="${SERVER_TIMES[$key]}"
     
+    # Skip IPv6
+    [[ "$ip" =~ : ]] && continue
+    
     # Strip -v6 suffix for provider comparison
     local provider_base="${provider_name%-v6}"
-    local best_provider_base="${best_primary_name%-v6}"
+    local best_provider_base="${best_v4_primary_name%-v6}"
     
     # Skip if same base provider as primary
     [ "$provider_base" = "$best_provider_base" ] && continue
     
-    if (( $(echo "$time < $best_secondary_time" | bc -l) )); then
-      best_secondary_time="$time"
-      best_secondary_ip="$ip"
-      best_secondary_name="$provider_name"
+    if (( $(echo "$time < $best_v4_secondary_time" | bc -l) )); then
+      best_v4_secondary_time="$time"
+      best_v4_secondary_ip="$ip"
+      best_v4_secondary_name="$provider_name"
     fi
   done
   
-  if [ "$best_primary_ip" != "" ] && [ "$best_secondary_ip" != "" ]; then
+  # Find best secondary for IPv6 from DIFFERENT provider
+  if [ "$HAS_IPV6" = "1" ]; then
+    for key in "${!SERVER_TIMES[@]}"; do
+      IFS='|' read -r provider_name ip <<< "$key"
+      local time="${SERVER_TIMES[$key]}"
+      
+      # Skip IPv4
+      [[ ! "$ip" =~ : ]] && continue
+      
+      # Strip -v6 suffix for provider comparison
+      local provider_base="${provider_name%-v6}"
+      local best_provider_base="${best_v6_primary_name%-v6}"
+      
+      # Skip if same base provider as primary
+      [ "$provider_base" = "$best_provider_base" ] && continue
+      
+      if (( $(echo "$time < $best_v6_secondary_time" | bc -l) )); then
+        best_v6_secondary_time="$time"
+        best_v6_secondary_ip="$ip"
+        best_v6_secondary_name="$provider_name"
+      fi
+    done
+  fi
+  
+  # Display IPv4 recommendation
+  if [ "$best_v4_primary_ip" != "" ] && [ "$best_v4_secondary_ip" != "" ]; then
     echo ""
-    echo -e "${BOLD}${GREEN}Recommended Configuration (Best Mix):${NC}"
+    echo -e "${BOLD}${GREEN}Recommended IPv4 Configuration (Best Mix):${NC}"
     echo "────────────────────────────────────────────────────────────────────────"
-    echo -e " Primary:   ${BOLD}$best_primary_ip${NC}"
-    echo -e "            ($best_primary_name - $(printf "%.2f" $best_primary_time) ms)"
-    echo -e " Secondary: ${BOLD}$best_secondary_ip${NC}"
-    echo -e "            ($best_secondary_name - $(printf "%.2f" $best_secondary_time) ms)"
+    echo -e " Primary:   ${BOLD}$best_v4_primary_ip${NC}"
+    echo -e "            ($best_v4_primary_name - $(printf "%.2f" $best_v4_primary_time) ms)"
+    echo -e " Secondary: ${BOLD}$best_v4_secondary_ip${NC}"
+    echo -e "            ($best_v4_secondary_name - $(printf "%.2f" $best_v4_secondary_time) ms)"
+  fi
+  
+  # Display IPv6 recommendation
+  if [ "$HAS_IPV6" = "1" ] && [ "$best_v6_primary_ip" != "" ] && [ "$best_v6_secondary_ip" != "" ]; then
     echo ""
-    echo -e " ${YELLOW}This configuration provides redundancy across different providers${NC}"
+    echo -e "${BOLD}${GREEN}Recommended IPv6 Configuration (Best Mix):${NC}"
+    echo "────────────────────────────────────────────────────────────────────────"
+    echo -e " Primary:   ${BOLD}$best_v6_primary_ip${NC}"
+    echo -e "            ($best_v6_primary_name - $(printf "%.2f" $best_v6_primary_time) ms)"
+    echo -e " Secondary: ${BOLD}$best_v6_secondary_ip${NC}"
+    echo -e "            ($best_v6_secondary_name - $(printf "%.2f" $best_v6_secondary_time) ms)"
+  fi
+  
+  if [ "$best_v4_primary_ip" != "" ] || [ "$best_v6_primary_ip" != "" ]; then
+    echo ""
+    echo -e " ${YELLOW}These configurations provide redundancy across different providers${NC}"
   fi
   
   echo ""
