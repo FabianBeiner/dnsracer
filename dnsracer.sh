@@ -28,18 +28,27 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-VERSION="1.1"
+VERSION="1.2"
 
 # ──────────────────────────────────────────────────────────────
-# Debug control – use --debug flag to enable
+# Flags – use --help, --verbose, --debug
 # ──────────────────────────────────────────────────────────────
 DNSBENCH_DEBUG=0
+VERBOSE=0
 
 for arg in "$@"; do
-  if [ "$arg" = "--debug" ]; then
-    DNSBENCH_DEBUG=1
-    break
-  fi
+  case "$arg" in
+    --help|-h)
+      # Defer to show_help() after function definitions
+      SHOW_HELP=1
+      ;;
+    --verbose|-v)
+      VERBOSE=1
+      ;;
+    --debug)
+      DNSBENCH_DEBUG=1
+      ;;
+  esac
 done
 
 DEBUG_LOG_FILE="dnsracer-debug.log"
@@ -72,6 +81,12 @@ declare -a DNS_NAMES_V4=(
   "AdGuard"
   "CleanBrowsing"
   "Comodo"
+  "FFMUC"
+  "dnsforge"
+  "Digitalcourage"
+  "Dig. Gesellschaft"
+  "UncensoredDNS"
+  "dismail"
 )
 
 declare -a DNS_NAMES_V6=(
@@ -82,6 +97,12 @@ declare -a DNS_NAMES_V6=(
   "DNS.SB-v6"
   "AdGuard-v6"
   "CleanBrowsing-v6"
+  "FFMUC-v6"
+  "dnsforge-v6"
+  "Digitalcourage-v6"
+  "Dig. Gesellschaft-v6"
+  "UncensoredDNS-v6"
+  "dismail-v6"
 )
 
 # Build the full DNS_NAMES array based on IPv6 availability
@@ -106,6 +127,18 @@ declare -A DNS_PRIMARY=(
   ["CleanBrowsing"]="185.228.168.9"
   ["CleanBrowsing-v6"]="2a0d:2a00:1::2"
   ["Comodo"]="8.26.56.26"
+  ["FFMUC"]="185.150.99.255"
+  ["FFMUC-v6"]="2001:678:e68:f000::"
+  ["dnsforge"]="49.12.67.122"
+  ["dnsforge-v6"]="2a01:4f8:c013:29d::122"
+  ["Digitalcourage"]="5.9.164.112"
+  ["Digitalcourage-v6"]="2a01:4f8:251:554::2"
+  ["Dig. Gesellschaft"]="185.95.218.42"
+  ["Dig. Gesellschaft-v6"]="2a05:fc84::42"
+  ["UncensoredDNS"]="91.239.100.100"
+  ["UncensoredDNS-v6"]="2001:67c:28a4::"
+  ["dismail"]="116.203.32.217"
+  ["dismail-v6"]="2a01:4f8:1c1b:44aa::1"
 )
 
 declare -A DNS_SECONDARY=(
@@ -124,6 +157,16 @@ declare -A DNS_SECONDARY=(
   ["CleanBrowsing"]="185.228.169.9"
   ["CleanBrowsing-v6"]="2a0d:2a00:2::2"
   ["Comodo"]="8.20.247.20"
+  ["FFMUC"]="5.1.66.255"
+  ["FFMUC-v6"]="2001:678:ed0:f000::"
+  ["dnsforge"]="91.99.154.175"
+  ["dnsforge-v6"]="2a01:4f8:c010:8c35::175"
+  ["Dig. Gesellschaft"]="185.95.218.43"
+  ["Dig. Gesellschaft-v6"]="2a05:fc84::43"
+  ["UncensoredDNS"]="89.233.43.71"
+  ["UncensoredDNS-v6"]="2a01:3a0:53:53::"
+  ["dismail"]="159.69.114.157"
+  ["dismail-v6"]="2a01:4f8:c17:739a::2"
 )
 
 declare -A DNS_DESC=(
@@ -143,16 +186,30 @@ declare -A DNS_DESC=(
   ["CleanBrowsing-v6"]="Security filtering (IPv6)"
   ["Comodo"]="Security-focused resolver"
   ["Comodo-v6"]="Security-focused resolver (IPv6)"
+  ["FFMUC"]="Freifunk Munich, community-run"
+  ["FFMUC-v6"]="Freifunk Munich, community-run (IPv6)"
+  ["dnsforge"]="Ad-blocking, privacy-focused (dnsforge.de)"
+  ["dnsforge-v6"]="Ad-blocking, privacy-focused (dnsforge.de, IPv6)"
+  ["Digitalcourage"]="Privacy-focused, Germany"
+  ["Digitalcourage-v6"]="Privacy-focused, Germany (IPv6)"
+  ["Dig. Gesellschaft"]="Swiss digital society"
+  ["Dig. Gesellschaft-v6"]="Swiss digital society (IPv6)"
+  ["UncensoredDNS"]="Censurfridns, Denmark"
+  ["UncensoredDNS-v6"]="Censurfridns, Denmark (IPv6)"
+  ["dismail"]="Privacy-focused, Germany (dismail.de)"
+  ["dismail-v6"]="Privacy-focused, Germany (dismail.de, IPv6)"
 )
 
 TEST_DOMAINS=(
-  "google.com"
   "cloudflare.com"
-  "github.com"
-  "wikipedia.org"
-  "heise.de"
-  "spiegel.de"
+  "akamai.com"
+  "fastly.com"
   "deutsche-telekom.de"
+  "hetzner.com"
+  "stackit.cloud"
+  "bbc.co.uk"
+  "ucl.ac.uk"
+  "ntt.co.jp"
 )
 
 TESTS_PER_DOMAIN=3
@@ -165,8 +222,72 @@ declare -A RESULTS
 # Helpers
 # ──────────────────────────────────────────────────────────────
 
+show_help() {
+  echo "dnsracer v${VERSION} - Benchmark DNS resolver performance"
+  echo ""
+  echo "Usage: ./dnsracer.sh [OPTIONS]"
+  echo ""
+  echo "Options:"
+  echo "  --help, -h       Show this help screen and exit"
+  echo "  --verbose, -v    Show per-query results (detailed output)"
+  echo "  --debug          Enable debug logging to $DEBUG_LOG_FILE"
+  echo ""
+  echo "Tested IPv4 Resolvers:"
+  for name in "${DNS_NAMES_V4[@]}"; do
+    local primary="${DNS_PRIMARY[$name]}"
+    local secondary="${DNS_SECONDARY[$name]}"
+    local desc="${DNS_DESC[$name]}"
+    if [ -n "$secondary" ]; then
+      printf "  %-20s %-18s %-18s %s\n" "$name" "$primary" "$secondary" "$desc"
+    else
+      printf "  %-20s %-18s %-18s %s\n" "$name" "$primary" "—" "$desc"
+    fi
+  done
+  echo ""
+  echo "Tested IPv6 Resolvers:"
+  for name in "${DNS_NAMES_V6[@]}"; do
+    local primary="${DNS_PRIMARY[$name]}"
+    local secondary="${DNS_SECONDARY[$name]}"
+    if [ -n "$secondary" ]; then
+      printf "  %-20s %s, %s\n" "$name" "$primary" "$secondary"
+    else
+      printf "  %-20s %s\n" "$name" "$primary"
+    fi
+  done
+  echo ""
+  echo "Test Domains:"
+  for domain in "${TEST_DOMAINS[@]}"; do
+    echo "  $domain"
+  done
+  echo ""
+  echo "Each domain is queried ${TESTS_PER_DOMAIN} times per resolver."
+}
+
+show_current_dns() {
+  local dns_servers=""
+
+  if [ -f /etc/resolv.conf ]; then
+    dns_servers=$(grep -E '^\s*nameserver\s+' /etc/resolv.conf 2>/dev/null \
+      | awk '{print $2}' | paste -sd ', ' -)
+  fi
+
+  if [ -z "$dns_servers" ] && command -v resolvectl &>/dev/null; then
+    dns_servers=$(resolvectl status 2>/dev/null \
+      | grep -oP 'DNS Servers:\s*\K.*' | paste -sd ', ' -)
+  fi
+
+  if [ -z "$dns_servers" ] && command -v scutil &>/dev/null; then
+    dns_servers=$(scutil --dns 2>/dev/null \
+      | grep -oP 'nameserver\[0-9*\]\s*:\s*\K\S+' | sort -u | paste -sd ', ' -)
+  fi
+
+  if [ -n "$dns_servers" ]; then
+    echo -e " ${YELLOW}DNS: ${NC} ${dns_servers}"
+  fi
+}
+
 print_header() {
-  clear
+  printf '\033[2J\033[H'
   echo -e "${BOLD}${BLUE}"
   cat <<'EOF'
      ██████╗ ███╗   ██╗███████╗    ██████╗  █████╗  ██████╗███████╗██████╗ 
@@ -201,6 +322,7 @@ EOF
     local pub_v6=$(get_public_ipv6)
     echo -e " ${YELLOW}IPv6:${NC} ${BOLD}${priv_v6}${NC} (public: ${pub_v6})"
   fi
+  show_current_dns
   echo ""
 }
 
@@ -245,6 +367,10 @@ test_dns_server() {
   local secondary="${DNS_SECONDARY[$name]}"
   local total_ms=0 success=0 total=$(( ${#TEST_DOMAINS[@]} * TESTS_PER_DOMAIN ))
   local consec_fail=0 early_abort=0
+  local query_num=0
+
+  # Spinner characters (braille pattern)
+  local spinner_chars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
 
   # Determine if this is IPv6 based on address format
   local is_ipv6=0
@@ -254,6 +380,15 @@ test_dns_server() {
 
   for domain in "${TEST_DOMAINS[@]}"; do
     for i in $(seq 1 $TESTS_PER_DOMAIN); do
+      ((query_num++))
+
+      # Show spinner in non-verbose mode
+      if [ "$VERBOSE" != "1" ]; then
+        local si=$(( (query_num - 1) % ${#spinner_chars} ))
+        local spin_char="${spinner_chars:$si:1}"
+        printf "\r  ${BLUE}${spin_char}${NC} Testing... (%d/%d)" "$query_num" "$total"
+      fi
+
       local server="$primary"
       [ -n "$secondary" ] && [ $success -eq 0 ] && server="$secondary"
 
@@ -280,15 +415,17 @@ test_dns_server() {
         ((total_ms += query_time))
         ((success++))
         consec_fail=0
-        printf "  %-20s ${GREEN}%4d ms${NC}\n" "$domain" "$query_time"
+        [ "$VERBOSE" = "1" ] && printf "  %-20s ${GREEN}%4d ms${NC}\n" "$domain" "$query_time"
       else
         ((consec_fail++))
         local fail_reason
         fail_reason=$(classify_dig_failure "$dig_rc" "$result")
-        printf "  %-20s ${RED}%-10s${NC}\n" "$domain" "$fail_reason"
+        [ "$VERBOSE" = "1" ] && printf "  %-20s ${RED}%-10s${NC}\n" "$domain" "$fail_reason"
 
         if [ $consec_fail -ge $MAX_CONSECUTIVE_FAILURES ]; then
           early_abort=1
+          # Clear spinner line before printing abort message
+          [ "$VERBOSE" != "1" ] && printf "\r\033[K"
           echo -e "  ${RED}⚠ Early abort after $MAX_CONSECUTIVE_FAILURES consecutive failures${NC}"
           break 2
         fi
@@ -296,6 +433,9 @@ test_dns_server() {
       sleep 0.2
     done
   done
+
+  # Clear spinner line
+  [ "$VERBOSE" != "1" ] && printf "\r\033[K"
 
   if [ $early_abort -eq 1 ]; then
     RESULTS["$name"]="9999|$success|$((total-success))|$total|early"
@@ -492,6 +632,7 @@ display_results() {
     echo " • IPv6 can sometimes be faster than IPv4 (or vice versa)"
   fi
   echo " • Early abort usually means port 53 UDP is blocked or unreachable"
+  echo -e " • Run with ${BOLD}./dnsracer.sh --verbose${NC} to see per-query results"
   echo -e " • Run with ${BOLD}./dnsracer.sh --debug${NC} for detailed logging"
   echo ""
 }
@@ -507,6 +648,11 @@ check_requirements() {
 }
 
 main() {
+  if [ "$SHOW_HELP" = "1" ]; then
+    show_help
+    exit 0
+  fi
+
   if [ "$DNSBENCH_DEBUG" = "1" ]; then
     > "$DEBUG_LOG_FILE" 2>/dev/null || true
     debug "Script started with --debug flag"
