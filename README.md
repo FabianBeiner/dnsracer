@@ -9,7 +9,7 @@ A fast, clean DNS resolver benchmark tool that tests and ranks public DNS server
 - 🌐 **IPv6 Support** - Auto-detects and tests IPv6 DNS servers when available
 - 💡 **Smart Recommendations** - Suggests optimal primary/secondary mix across different providers
 - 🌍 **Global + European Coverage** - Tests major global providers plus privacy-focused European resolvers
-- 🔒 **Privacy-Focused Resolvers** - Includes FFMUC, dnsforge, Digitalcourage, UncensoredDNS, and more
+- 🔒 **Privacy-Focused Resolvers** - Includes FFMUC, dnsforge, Digitalcourage, DigitaleGesellschaft, UncensoredDNS, and more
 - 🎯 **Smart Detection** - Early abort on unreachable servers
 - 🖥️ **Current DNS Display** - Shows your currently configured DNS servers
 - 📋 **Verbose Mode** - Optional per-query detail with `--verbose`
@@ -137,11 +137,11 @@ Recommended IPv4 Configuration (Best Mix):
 | AdGuard | 94.140.14.14 | 94.140.15.15 | Ad-blocking |
 | CleanBrowsing | 185.228.168.9 | 185.228.169.9 | Security filtering |
 | Comodo | 8.26.56.26 | 8.20.247.20 | Security-focused |
-| FFMUC | 185.150.99.255 | 5.1.66.255 | Freifunk Munich, community-run |
+| FFMUC | 185.150.99.255 | 5.1.66.255 | Freifunk Munich community DNS |
 | dnsforge | 49.12.67.122 | 91.99.154.175 | Ad-blocking (dnsforge.de) |
-| Digitalcourage | 5.9.164.112 | — | Privacy-focused, Germany |
-| Dig.Gesellschaft | 185.95.218.42 | 185.95.218.43 | Swiss digital society |
-| UncensoredDNS | 91.239.100.100 | 89.233.43.71 | Censurfridns, Denmark |
+| Digitalcourage | 5.9.164.112 | — | Privacy-focused, Germany (DoT-only) |
+| DigitaleGesellschaft | 185.95.218.42 | 185.95.218.43 | Swiss digital society |
+| UncensoredDNS | 91.239.100.100 | 89.233.43.71 | Danish uncensored DNS |
 | dismail | 116.203.32.217 | 159.69.114.157 | Privacy-focused (dismail.de) |
 
 ### IPv6 Resolvers (tested automatically when IPv6 is available)
@@ -157,13 +157,9 @@ Recommended IPv4 Configuration (Best Mix):
 | FFMUC | 2001:678:e68:f000:: | 2001:678:ed0:f000:: |
 | dnsforge | 2a01:4f8:c013:29d::122 | 2a01:4f8:c010:8c35::175 |
 | Digitalcourage | 2a01:4f8:251:554::2 | — |
-| Dig.Gesellschaft | 2a05:fc84::42 | 2a05:fc84::43 |
+| DigitaleGesellschaft | 2a05:fc84::42 | 2a05:fc84::43 |
 | UncensoredDNS | 2001:67c:28a4:: | 2a01:3a0:53:53:: |
 | dismail | 2a01:4f8:1c1b:44aa::1 | 2a01:4f8:c17:739a::2 |
-
-### Not Included
-
-- **Mullvad DNS** (194.242.2.4 / base.dns.mullvad.net) — Only supports DNS-over-HTTPS (DoH) and DNS-over-TLS (DoT), not plain DNS on port 53. Since `dig` uses port 53 by default, Mullvad cannot be tested without adding DoH/DoT support.
 
 ## Test Domains
 
@@ -217,8 +213,4 @@ Contributions welcome! Feel free to:
 
 ## Author
 
-Created by Fabian Beiner
-
----
-
-**Note:** This tool measures DNS resolution speed from your specific location. Results will vary based on your geographic location and network conditions.
+Created by [Fabian Beiner](https://github.com/FabianBeiner)

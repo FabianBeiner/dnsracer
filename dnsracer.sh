@@ -84,7 +84,7 @@ declare -a DNS_NAMES_V4=(
   "FFMUC"
   "dnsforge"
   "Digitalcourage"
-  "Dig.Gesellschaft"
+  "DigitaleGesellschaft"
   "UncensoredDNS"
   "dismail"
 )
@@ -100,7 +100,7 @@ declare -a DNS_NAMES_V6=(
   "FFMUC-v6"
   "dnsforge-v6"
   "Digitalcourage-v6"
-  "Dig.Gesellschaft-v6"
+  "DigitaleGesellschaft-v6"
   "UncensoredDNS-v6"
   "dismail-v6"
 )
@@ -114,29 +114,42 @@ fi
 declare -A DNS_PRIMARY=(
   ["Cloudflare"]="1.1.1.1"
   ["Cloudflare-v6"]="2606:4700:4700::1111"
+
   ["Google"]="8.8.8.8"
   ["Google-v6"]="2001:4860:4860::8888"
+
   ["Quad9"]="9.9.9.9"
   ["Quad9-v6"]="2620:fe::fe"
+
   ["OpenDNS"]="208.67.222.222"
   ["OpenDNS-v6"]="2620:119:35::35"
+
   ["DNS.SB"]="185.222.222.222"
   ["DNS.SB-v6"]="2a09::"
+
   ["AdGuard"]="94.140.14.14"
   ["AdGuard-v6"]="2a10:50c0::ad1:ff"
+
   ["CleanBrowsing"]="185.228.168.9"
   ["CleanBrowsing-v6"]="2a0d:2a00:1::2"
+
   ["Comodo"]="8.26.56.26"
+
   ["FFMUC"]="185.150.99.255"
   ["FFMUC-v6"]="2001:678:e68:f000::"
+
   ["dnsforge"]="49.12.67.122"
   ["dnsforge-v6"]="2a01:4f8:c013:29d::122"
+
   ["Digitalcourage"]="5.9.164.112"
   ["Digitalcourage-v6"]="2a01:4f8:251:554::2"
-  ["Dig.Gesellschaft"]="185.95.218.42"
-  ["Dig.Gesellschaft-v6"]="2a05:fc84::42"
+
+  ["DigitaleGesellschaft"]="185.95.218.42"
+  ["DigitaleGesellschaft-v6"]="2a05:fc84::42"
+
   ["UncensoredDNS"]="91.239.100.100"
   ["UncensoredDNS-v6"]="2001:67c:28a4::"
+
   ["dismail"]="116.203.32.217"
   ["dismail-v6"]="2a01:4f8:1c1b:44aa::1"
 )
@@ -144,60 +157,84 @@ declare -A DNS_PRIMARY=(
 declare -A DNS_SECONDARY=(
   ["Cloudflare"]="1.0.0.1"
   ["Cloudflare-v6"]="2606:4700:4700::1001"
+
   ["Google"]="8.8.4.4"
   ["Google-v6"]="2001:4860:4860::8844"
+
   ["Quad9"]="149.112.112.112"
   ["Quad9-v6"]="2620:fe::9"
+
   ["OpenDNS"]="208.67.220.220"
   ["OpenDNS-v6"]="2620:119:53::53"
+
   ["DNS.SB"]="45.11.45.11"
   ["DNS.SB-v6"]="2a11::"
+
   ["AdGuard"]="94.140.15.15"
   ["AdGuard-v6"]="2a10:50c0::ad2:ff"
+
   ["CleanBrowsing"]="185.228.169.9"
   ["CleanBrowsing-v6"]="2a0d:2a00:2::2"
+
   ["Comodo"]="8.20.247.20"
+
   ["FFMUC"]="5.1.66.255"
   ["FFMUC-v6"]="2001:678:ed0:f000::"
+
   ["dnsforge"]="91.99.154.175"
   ["dnsforge-v6"]="2a01:4f8:c010:8c35::175"
-  ["Dig.Gesellschaft"]="185.95.218.43"
-  ["Dig.Gesellschaft-v6"]="2a05:fc84::43"
+
+  ["DigitaleGesellschaft"]="185.95.218.43"
+  ["DigitaleGesellschaft-v6"]="2a05:fc84::43"
+
   ["UncensoredDNS"]="89.233.43.71"
   ["UncensoredDNS-v6"]="2a01:3a0:53:53::"
+
   ["dismail"]="159.69.114.157"
   ["dismail-v6"]="2a01:4f8:c17:739a::2"
 )
 
 declare -A DNS_DESC=(
-  ["Cloudflare"]="Fast global anycast, privacy-focused"
-  ["Cloudflare-v6"]="Fast global anycast, privacy-focused (IPv6)"
-  ["Google"]="Reliable, high uptime, global coverage"
-  ["Google-v6"]="Reliable, high uptime, global coverage (IPv6)"
-  ["Quad9"]="Security and privacy-focused"
-  ["Quad9-v6"]="Security and privacy-focused (IPv6)"
-  ["OpenDNS"]="Reliable with optional filtering"
-  ["OpenDNS-v6"]="Reliable with optional filtering (IPv6)"
-  ["DNS.SB"]="No-logging, privacy-focused"
-  ["DNS.SB-v6"]="No-logging, privacy-focused (IPv6)"
-  ["AdGuard"]="Ad-blocking DNS resolver"
-  ["AdGuard-v6"]="Ad-blocking DNS resolver (IPv6)"
-  ["CleanBrowsing"]="Security filtering"
-  ["CleanBrowsing-v6"]="Security filtering (IPv6)"
-  ["Comodo"]="Security-focused resolver"
-  ["Comodo-v6"]="Security-focused resolver (IPv6)"
-  ["FFMUC"]="Freifunk Munich, community-run"
-  ["FFMUC-v6"]="Freifunk Munich, community-run (IPv6)"
-  ["dnsforge"]="Ad-blocking, privacy-focused (dnsforge.de)"
-  ["dnsforge-v6"]="Ad-blocking, privacy-focused (dnsforge.de, IPv6)"
-  ["Digitalcourage"]="Privacy-focused, Germany"
-  ["Digitalcourage-v6"]="Privacy-focused, Germany (IPv6)"
-  ["Dig.Gesellschaft"]="Swiss digital society"
-  ["Dig.Gesellschaft-v6"]="Swiss digital society (IPv6)"
-  ["UncensoredDNS"]="Censurfridns, Denmark"
-  ["UncensoredDNS-v6"]="Censurfridns, Denmark (IPv6)"
-  ["dismail"]="Privacy-focused, Germany (dismail.de)"
-  ["dismail-v6"]="Privacy-focused, Germany (dismail.de, IPv6)"
+  ["Cloudflare"]="Public anycast resolver (fast). Supports encrypted DNS (DoT/DoH)."
+  ["Cloudflare-v6"]="Cloudflare IPv6 resolver. Supports encrypted DNS (DoT/DoH)."
+
+  ["Google"]="Public anycast resolver with global coverage; focus on reliability/performance."
+  ["Google-v6"]="Google Public DNS IPv6 resolver with global coverage."
+
+  ["Quad9"]="Security-focused public resolver blocking malicious domains; DNSSEC + encrypted DNS."
+  ["Quad9-v6"]="Quad9 IPv6 security-focused resolver blocking malicious domains; DNSSEC + encrypted DNS."
+
+  ["OpenDNS"]="Cisco OpenDNS (Umbrella) public resolver. Optional filtering via Umbrella."
+  ["OpenDNS-v6"]="Cisco OpenDNS IPv6 public resolver. Optional filtering via Umbrella."
+
+  ["DNS.SB"]="Privacy-focused resolver (no logs per provider). DNSSEC + encrypted DNS."
+  ["DNS.SB-v6"]="DNS.SB IPv6 privacy-focused resolver. DNSSEC + encrypted DNS."
+
+  ["AdGuard"]="AdGuard DNS blocks ads, trackers and phishing domains. Encrypted DNS supported."
+  ["AdGuard-v6"]="AdGuard DNS IPv6 blocks ads, trackers and phishing domains."
+
+  ["CleanBrowsing"]="Security Filter blocks malware, phishing and abusive domains. DoT/DoH."
+  ["CleanBrowsing-v6"]="CleanBrowsing Security Filter IPv6. Blocks malware, phishing and abusive domains."
+
+  ["Comodo"]="Comodo Secure DNS security-oriented resolver (IPv4 only)."
+
+  ["FFMUC"]="Freifunk München community DNS resolver. Supports DoT/DoH/DoQ."
+  ["FFMUC-v6"]="Freifunk München IPv6 community DNS resolver. Supports DoT/DoH/DoQ."
+
+  ["dnsforge"]="dnsforge.de resolver with ad, tracker and malware blocking."
+  ["dnsforge-v6"]="dnsforge.de IPv6 resolver with ad, tracker and malware blocking."
+
+  ["Digitalcourage"]="Digitalcourage DNS (Germany). DoT-only resolver for censorship circumvention."
+  ["Digitalcourage-v6"]="Digitalcourage IPv6 DoT-only resolver for censorship circumvention."
+
+  ["DigitaleGesellschaft"]="Digitale Gesellschaft Switzerland privacy-oriented resolver. No blocklists, DNSSEC."
+  ["DigitaleGesellschaft-v6"]="Digitale Gesellschaft Switzerland IPv6 privacy-oriented resolver. No blocklists, DNSSEC."
+
+  ["UncensoredDNS"]="Danish uncensored resolver. Supports encrypted DNS (DoT/DoH)."
+  ["UncensoredDNS-v6"]="UncensoredDNS IPv6 resolver. Supports encrypted DNS (DoT/DoH)."
+
+  ["dismail"]="dismail.de privacy-focused DNS with blocklists. DoT supported."
+  ["dismail-v6"]="dismail.de IPv6 privacy-focused DNS with blocklists. DoT supported."
 )
 
 TEST_DOMAINS=(
@@ -232,28 +269,45 @@ show_help() {
   echo "  --verbose, -v    Show per-query results (detailed output)"
   echo "  --debug          Enable debug logging to $DEBUG_LOG_FILE"
   echo ""
+
+  local dash="-"   # ASCII only (prevents width/rendering issues)
+  local name primary secondary desc
+  local name_w=0 primary_w=0 secondary_w=0
+
+  # Compute widths across BOTH v4 and v6 so tables align visually
+  for name in "${DNS_NAMES_V4[@]}" "${DNS_NAMES_V6[@]}"; do
+    primary="${DNS_PRIMARY[$name]}"
+    secondary="${DNS_SECONDARY[$name]}"
+    [ -z "$secondary" ] && secondary="$dash"
+
+    (( ${#name} > name_w )) && name_w=${#name}
+    (( ${#primary} > primary_w )) && primary_w=${#primary}
+    (( ${#secondary} > secondary_w )) && secondary_w=${#secondary}
+  done
+
+  # Minimum widths for readability
+  (( name_w < 20 )) && name_w=20
+  (( primary_w < 18 )) && primary_w=18
+  (( secondary_w < 18 )) && secondary_w=18
+
   echo "Tested IPv4 Resolvers:"
   for name in "${DNS_NAMES_V4[@]}"; do
-    local primary="${DNS_PRIMARY[$name]}"
-    local secondary="${DNS_SECONDARY[$name]}"
-    local desc="${DNS_DESC[$name]}"
-    if [ -n "$secondary" ]; then
-      printf "  %-20s %-18s %-18s %s\n" "$name" "$primary" "$secondary" "$desc"
-    else
-      printf "  %-20s %-18s %-18s %s\n" "$name" "$primary" "—" "$desc"
-    fi
+    primary="${DNS_PRIMARY[$name]}"
+    secondary="${DNS_SECONDARY[$name]}"
+    desc="${DNS_DESC[$name]}"
+    [ -z "$secondary" ] && secondary="$dash"
+    printf "  %-${name_w}s %-${primary_w}s %-${secondary_w}s %s\n" "$name" "$primary" "$secondary" "$desc"
   done
+
   echo ""
   echo "Tested IPv6 Resolvers:"
   for name in "${DNS_NAMES_V6[@]}"; do
-    local primary="${DNS_PRIMARY[$name]}"
-    local secondary="${DNS_SECONDARY[$name]}"
-    if [ -n "$secondary" ]; then
-      printf "  %-20s %s, %s\n" "$name" "$primary" "$secondary"
-    else
-      printf "  %-20s %s\n" "$name" "$primary"
-    fi
+    primary="${DNS_PRIMARY[$name]}"
+    secondary="${DNS_SECONDARY[$name]}"
+    [ -z "$secondary" ] && secondary="$dash"
+    printf "  %-${name_w}s %-${primary_w}s %-${secondary_w}s\n" "$name" "$primary" "$secondary"
   done
+
   echo ""
   echo "Test Domains:"
   for domain in "${TEST_DOMAINS[@]}"; do
@@ -290,16 +344,16 @@ print_header() {
   printf '\033[2J\033[H'
   echo -e "${BOLD}${BLUE}"
   cat <<'EOF'
-     ██████╗ ███╗   ██╗███████╗    ██████╗  █████╗  ██████╗███████╗██████╗ 
-     ██╔══██╗████╗  ██║██╔════╝    ██╔══██╗██╔══██╗██╔════╝██╔════╝██╔══██╗
-     ██║  ██║██╔██╗ ██║███████╗    ██████╔╝███████║██║     █████╗  ██████╔╝
-     ██║  ██║██║╚██╗██║╚════██║    ██╔══██╗██╔══██║██║     ██╔══╝  ██╔══██╗
-     ██████╔╝██║ ╚████║███████║    ██║  ██║██║  ██║╚██████╗███████╗██║  ██║
-     ╚═════╝ ╚═╝  ╚═══╝╚══════╝    ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝  ╚═╝
+██████╗ ███╗   ██╗███████╗    ██████╗  █████╗  ██████╗███████╗██████╗ 
+██╔══██╗████╗  ██║██╔════╝    ██╔══██╗██╔══██╗██╔════╝██╔════╝██╔══██╗
+██║  ██║██╔██╗ ██║███████╗    ██████╔╝███████║██║     █████╗  ██████╔╝
+██║  ██║██║╚██╗██║╚════██║    ██╔══██╗██╔══██║██║     ██╔══╝  ██╔══██╗
+██████╔╝██║ ╚████║███████║    ██║  ██║██║  ██║╚██████╗███████╗██║  ██║
+╚═════╝ ╚═╝  ╚═══╝╚══════╝    ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝  ╚═╝
 EOF
-  echo -e "                                                           v${VERSION}${NC}"
+  echo -e "                                                                  v${VERSION}${NC}"
   echo ""
-  echo "════════════════════════════════════════════════════════════════════════"
+  echo "══════════════════════════════════════════════════════════════════════"
   echo " Testing ${#DNS_NAMES[@]} resolvers • ${#TEST_DOMAINS[@]} domains × $TESTS_PER_DOMAIN queries each"
   if [ "$HAS_IPV6" = "1" ]; then
     echo -e " ${GREEN}IPv6 detected${NC} - testing both IPv4 and IPv6 resolvers"
@@ -310,7 +364,7 @@ EOF
   if [ "$DNSBENCH_DEBUG" = "1" ]; then
     echo -e " ${GREEN}Debug mode enabled${NC} → logs to $DEBUG_LOG_FILE"
   fi
-  echo "════════════════════════════════════════════════════════════════════════"
+  echo "══════════════════════════════════════════════════════════════════════"
   echo ""
   
   local priv_v4=$(get_private_ip)
@@ -462,15 +516,20 @@ test_dns_server() {
 }
 
 display_results() {
+  # Table width = 6+1+20+1+38+1+12+4+12 = 95 (matches header format)
+  local tw=95
+  local sep_double=$(printf '═%.0s' $(seq 1 $tw))
+  local sep_single=$(printf '─%.0s' $(seq 1 $tw))
+
   echo ""
-  echo "════════════════════════════════════════════════════════════════════════"
-  echo -e "                         ${BOLD}FINAL RANKINGS${NC}"
-  echo "════════════════════════════════════════════════════════════════════════"
+  echo "$sep_double"
+  printf "%*s\n" $(( (tw + 14) / 2 )) "FINAL RANKINGS"
+  echo "$sep_double"
   echo ""
 
   printf "${BOLD}%-6s %-20s %-38s %12s    %s${NC}\n" \
          "Rank" "Resolver" "IP Address(es)" "Avg Time" "Success Rate"
-  echo "────────────────────────────────────────────────────────────────────────"
+  echo "$sep_single"
 
   # Track individual server performance for recommendations
   declare -A SERVER_TIMES
@@ -517,8 +576,8 @@ display_results() {
   done
 
   echo ""
-  echo "════════════════════════════════════════════════════════════════════════"
-  
+  echo "$sep_double"
+
   # Calculate recommended mix - separate for IPv4 and IPv6
   local best_v4_primary_name="" best_v4_primary_ip="" best_v4_primary_time=9999
   local best_v4_secondary_name="" best_v4_secondary_ip="" best_v4_secondary_time=9999
@@ -598,7 +657,7 @@ display_results() {
   if [ "$best_v4_primary_ip" != "" ] && [ "$best_v4_secondary_ip" != "" ]; then
     echo ""
     echo -e "${BOLD}${GREEN}Recommended IPv4 Configuration (Best Mix):${NC}"
-    echo "────────────────────────────────────────────────────────────────────────"
+    echo "$sep_single"
     echo -e " Primary:   ${BOLD}$best_v4_primary_ip${NC}"
     echo -e "            ($best_v4_primary_name - $(printf "%.2f" $best_v4_primary_time) ms)"
     echo -e " Secondary: ${BOLD}$best_v4_secondary_ip${NC}"
@@ -609,7 +668,7 @@ display_results() {
   if [ "$HAS_IPV6" = "1" ] && [ "$best_v6_primary_ip" != "" ] && [ "$best_v6_secondary_ip" != "" ]; then
     echo ""
     echo -e "${BOLD}${GREEN}Recommended IPv6 Configuration (Best Mix):${NC}"
-    echo "────────────────────────────────────────────────────────────────────────"
+    echo "$sep_single"
     echo -e " Primary:   ${BOLD}$best_v6_primary_ip${NC}"
     echo -e "            ($best_v6_primary_name - $(printf "%.2f" $best_v6_primary_time) ms)"
     echo -e " Secondary: ${BOLD}$best_v6_secondary_ip${NC}"
@@ -622,7 +681,7 @@ display_results() {
   fi
   
   echo ""
-  echo "════════════════════════════════════════════════════════════════════════"
+  echo "$sep_double"
   echo ""
   echo -e "${BLUE}Tips:${NC}"
   echo " • Lower latency is better - top performers typically show <20ms"
