@@ -140,7 +140,7 @@ Recommended IPv4 Configuration (Best Mix):
 | FFMUC | 185.150.99.255 | 5.1.66.255 | Freifunk Munich, community-run |
 | dnsforge | 49.12.67.122 | 91.99.154.175 | Ad-blocking (dnsforge.de) |
 | Digitalcourage | 5.9.164.112 | — | Privacy-focused, Germany |
-| Dig. Gesellschaft | 185.95.218.42 | 185.95.218.43 | Swiss digital society |
+| Dig.Gesellschaft | 185.95.218.42 | 185.95.218.43 | Swiss digital society |
 | UncensoredDNS | 91.239.100.100 | 89.233.43.71 | Censurfridns, Denmark |
 | dismail | 116.203.32.217 | 159.69.114.157 | Privacy-focused (dismail.de) |
 
@@ -157,7 +157,7 @@ Recommended IPv4 Configuration (Best Mix):
 | FFMUC | 2001:678:e68:f000:: | 2001:678:ed0:f000:: |
 | dnsforge | 2a01:4f8:c013:29d::122 | 2a01:4f8:c010:8c35::175 |
 | Digitalcourage | 2a01:4f8:251:554::2 | — |
-| Dig. Gesellschaft | 2a05:fc84::42 | 2a05:fc84::43 |
+| Dig.Gesellschaft | 2a05:fc84::42 | 2a05:fc84::43 |
 | UncensoredDNS | 2001:67c:28a4:: | 2a01:3a0:53:53:: |
 | dismail | 2a01:4f8:1c1b:44aa::1 | 2a01:4f8:c17:739a::2 |
 
